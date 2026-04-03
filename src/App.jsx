@@ -1,72 +1,46 @@
 import { useState, useEffect, useRef } from 'react'
 import './index.css'
 
-/* ─── Reveal on scroll ─── */
+/* ─── Reveal ─── */
 function useReveal() {
   const ref = useRef(null)
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    el.classList.add('reveal-hidden')
     const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          el.style.opacity = '1'
-          el.style.transform = 'translateY(0)'
-        }
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
+      ([e]) => { if (e.isIntersecting) el.classList.add('reveal-visible') },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
     )
     obs.observe(el)
     return () => obs.disconnect()
   }, [])
   return ref
 }
-
-const Reveal = ({ children, className = '', style = {} }) => {
+const R = ({ children, className = '', delay = 0 }) => {
   const ref = useReveal()
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{ opacity: 0, transform: 'translateY(40px)', transition: 'opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)', ...style }}
-    >
-      {children}
-    </div>
-  )
-}
-
-const Meta = ({ children, className = '', style = {} }) => (
-  <div className={`meta-text ${className}`} style={style}>{children}</div>
-)
-
-/* ─── Background Grid (CSS only) ─── */
-function BgGrid() {
-  return (
-    <div
-      className="fixed inset-0 pointer-events-none"
-      style={{
-        zIndex: -1,
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
-        backgroundSize: '100px 100px',
-        backgroundPosition: 'center center',
-        maskImage: 'radial-gradient(circle at center, black 30%, transparent 80%)',
-        WebkitMaskImage: 'radial-gradient(circle at center, black 30%, transparent 80%)',
-      }}
-    />
-  )
+  return <div ref={ref} className={className} style={{ transitionDelay: `${delay}s` }}>{children}</div>
 }
 
 /* ─── Header ─── */
 function Header() {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    const h = () => setShow(window.scrollY > 300)
+    window.addEventListener('scroll', h, { passive: true })
+    return () => window.removeEventListener('scroll', h)
+  }, [])
   return (
-    <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-6 md:py-8" style={{ mixBlendMode: 'difference' }}>
-      <div className="text-base font-medium" style={{ letterSpacing: '-0.02em' }}>Uppora —</div>
-      <nav className="hidden md:flex gap-8">
-        {[['#pain', 'Проблемы'], ['#steps', 'Как работает'], ['#compare', 'Сравнение'], ['#faq', 'FAQ']].map(([href, label]) => (
-          <a key={href} href={href} className="text-white no-underline" style={{ fontSize: '0.8rem', fontWeight: 400, transition: 'color 0.3s' }}>{label}</a>
-        ))}
-      </nav>
-      <a href="#final-cta" className="text-white no-underline" style={{ fontSize: '0.8rem', fontWeight: 400 }}>Заявка →</a>
+    <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${show ? 'bg-black/80 backdrop-blur-xl py-4' : 'py-6 md:py-8'}`} style={{ mixBlendMode: show ? 'normal' : 'difference' }}>
+      <div className="max-w-[1400px] mx-auto px-[var(--padding-edge)] flex justify-between items-center">
+        <span className="text-sm font-medium tracking-tight">Uppora —</span>
+        <nav className="hidden md:flex gap-8">
+          {[['#pain','Проблемы'],['#steps','Как работает'],['#compare','Сравнение'],['#faq','FAQ']].map(([h,l])=>(
+            <a key={h} href={h} className="text-[0.8rem] text-white/70 hover:text-white transition-colors no-underline">{l}</a>
+          ))}
+        </nav>
+        <a href="#final-cta" className="text-[0.8rem] text-white/70 hover:text-white transition-colors no-underline">Заявка →</a>
+      </div>
     </header>
   )
 }
@@ -74,365 +48,336 @@ function Header() {
 /* ─── Hero ─── */
 function Hero() {
   return (
-    <section className="text-center relative" style={{ paddingTop: 200, paddingBottom: 80 }} id="hero">
-      <Meta style={{ marginBottom: '2rem' }}>[ Платформа QR-донатов ]</Meta>
-      <Reveal>
-        <h1 className="serif-text" style={{ fontSize: 'clamp(3.5rem, 8vw, 7rem)', lineHeight: 1.1, letterSpacing: '-0.03em', maxWidth: 800, margin: '0 auto 24px' }}>
-          Комиссия всего 4,5%.
+    <section className="text-center pt-40 md:pt-52 pb-12 relative px-[var(--padding-edge)]">
+      <R><div className="meta mb-6">[ Платформа QR-донатов ]</div></R>
+      <R delay={0.1}>
+        <h1 className="serif text-[clamp(3rem,8vw,6.5rem)] leading-[0.95] tracking-[-0.03em] max-w-[800px] mx-auto mb-6">
+          Комиссия{' '}<br className="hidden sm:block" />
+          <span className="italic">всего 4,5%.</span>
         </h1>
-      </Reveal>
-      <Reveal style={{ transitionDelay: '0.15s' }}>
-        <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', maxWidth: 420, margin: '0 auto', fontWeight: 300 }}>
+      </R>
+      <R delay={0.2}>
+        <p className="text-[1.05rem] text-[var(--text-muted)] max-w-[420px] mx-auto font-light leading-relaxed">
           QR-донаты без регистрации для донатеров. Без подписок. Без паспорта. Вывод на карту в тот же день.
         </p>
-      </Reveal>
-      <div className="hidden md:block" style={{ position: 'absolute', top: 120, right: 48, textAlign: 'right' }}>
-        <Meta>SYS.REQ // ALPHA<br />VER. 1.0</Meta>
+      </R>
+      <R delay={0.3}>
+        <div className="flex flex-wrap gap-4 justify-center mt-10">
+          <a href="#final-cta" className="bg-[var(--amber)] text-black px-8 py-3.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity no-underline">Оставить заявку</a>
+          <a href="#steps" className="border border-white/15 text-white/70 px-8 py-3.5 rounded-full text-sm hover:border-white/30 hover:text-white transition-all no-underline">Как это работает</a>
+        </div>
+      </R>
+      <div className="hidden md:block absolute top-32 right-[var(--padding-edge)]">
+        <div className="meta text-right">SYS.REQ // ALPHA<br/>VER. 1.0</div>
       </div>
     </section>
   )
 }
 
-/* ─── Spatial Cards Gallery ─── */
+/* ─── Spatial Cards ─── */
 function SpatialGallery() {
   const cards = [
-    { meta: 'Проблема #1', title: '10–15%\nкомиссии', img: 'https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=800' },
-    { meta: 'Проблема #2', title: 'Регистрация\nдонатера', img: 'https://images.pexels.com/photos/210607/pexels-photo-210607.jpeg?auto=compress&cs=tinysrgb&w=800' },
-    { meta: 'Решение', title: 'Uppora:\n4,5%', img: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800' },
-    { meta: 'Проблема #3', title: 'Подписки =\nдавление', img: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=800' },
-    { meta: 'Проблема #4', title: 'Выплаты\nчерез неделю', img: 'https://images.pexels.com/photos/842711/pexels-photo-842711.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { meta: 'Барьер #1', title: '10–15%\nкомиссии', img: 'https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { meta: 'Барьер #2', title: 'Регистрация\nдонатера', img: 'https://images.pexels.com/photos/210607/pexels-photo-210607.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { meta: 'Решение', title: 'Uppora:\n4,5%', img: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { meta: 'Барьер #3', title: 'Подписки =\nдавление', img: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { meta: 'Барьер #4', title: 'Выплаты\nчерез неделю', img: 'https://images.pexels.com/photos/842711/pexels-photo-842711.jpeg?auto=compress&cs=tinysrgb&w=600' },
   ]
-
-  const positions = [
-    { x: -650, z: -400, ry: 25, opacity: 0.3 },
-    { x: -340, z: -200, ry: 15, opacity: 0.7 },
-    { x: 0, z: 50, ry: 0, opacity: 1 },
-    { x: 340, z: -200, ry: -15, opacity: 0.7 },
-    { x: 650, z: -400, ry: -25, opacity: 0.3 },
+  const cfgs = [
+    { x: -580, z: -350, ry: 22, o: 0.25 },
+    { x: -290, z: -170, ry: 12, o: 0.65 },
+    { x: 0, z: 40, ry: 0, o: 1 },
+    { x: 290, z: -170, ry: -12, o: 0.65 },
+    { x: 580, z: -350, ry: -22, o: 0.25 },
   ]
-
   return (
-    <section style={{ perspective: 1500, height: '70vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden', marginBottom: 80 }}>
-      <div style={{ transformStyle: 'preserve-3d', position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        {cards.map((card, i) => {
-          const p = positions[i]
-          return (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                width: 320,
-                height: 480,
-                borderRadius: 24,
-                backgroundImage: `url(${card.img})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                transform: `translateX(${p.x}px) translateZ(${p.z}px) rotateY(${p.ry}deg)`,
-                opacity: p.opacity,
-                boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
-                transition: 'transform 0.8s cubic-bezier(0.2,0.8,0.2,1)',
-                zIndex: i === 2 ? 10 : 1,
-                display: 'flex',
-                alignItems: 'flex-end',
-                padding: 32,
-                overflow: 'hidden',
-              }}
-            >
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 60%)', zIndex: 1 }} />
-              <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>{card.meta}</div>
-                <h3 className="serif-text" style={{ fontSize: '1.75rem', lineHeight: 1.1, whiteSpace: 'pre-line' }}>{card.title}</h3>
-              </div>
+    <section className="spatial-stage mb-20">
+      <div className="spatial-track">
+        {cards.map((c, i) => (
+          <div key={i} className="spatial-card" style={{
+            backgroundImage: `url(${c.img})`,
+            transform: `translateX(${cfgs[i].x}px) translateZ(${cfgs[i].z}px) rotateY(${cfgs[i].ry}deg)`,
+            opacity: cfgs[i].o, zIndex: i === 2 ? 10 : 1,
+          }}>
+            <div className="relative z-[2] w-full">
+              <div className="text-[0.7rem] text-white/50 mb-1 font-medium uppercase tracking-wider">{c.meta}</div>
+              <h3 className="serif text-[1.6rem] leading-[1.1] whitespace-pre-line">{c.title}</h3>
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
     </section>
   )
 }
 
-/* ─── Trust Bar ─── */
-function TrustBar() {
+/* ─── Trust Strip ─── */
+function Trust() {
   return (
-    <Reveal>
-      <section style={{ padding: '48px 48px', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 40 }}>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', width: 120, flexShrink: 0 }}>Доверяют</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 48 }}>
-          {['Т-Банк — платёжный партнёр', 'PCI DSS + SSL', '0% НДФЛ — ст. 217 НК РФ', 'Договор дарения'].map((t, i) => (
-            <span key={i} className="meta-text" style={{ opacity: 0.5, whiteSpace: 'nowrap' }}>{t}</span>
+    <R>
+      <div className="section-line py-10 px-[var(--padding-edge)] flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-14" style={{ borderBottom: '1px solid var(--section-border)' }}>
+        <span className="text-[0.7rem] text-[var(--text-muted)] uppercase tracking-wider shrink-0 w-24">Доверяют</span>
+        <div className="flex flex-wrap gap-x-12 gap-y-3">
+          {['Т-Банк — платёжный партнёр','PCI DSS + SSL','0% НДФЛ — ст. 217 НК РФ','Договор дарения'].map((t,i)=>(
+            <span key={i} className="meta opacity-40">{t}</span>
           ))}
         </div>
-      </section>
-    </Reveal>
+      </div>
+    </R>
   )
 }
 
 /* ─── Pain Points ─── */
-function PainSection() {
-  const pains = [
-    { title: '10–15% комиссии', desc: 'Типичная платформа забирает 10% комиссии + 3% эквайринг. С каждой тысячи автору — 870 ₽.', answer: 'Uppora: 4,5% всего. Автору — 955 ₽' },
-    { title: 'Регистрация для донатера', desc: 'Хочешь поддержать автора — создай аккаунт, подтверди email, запомни пароль. Половина уходит.', answer: 'Uppora: ноль регистрации. QR → сумма → готово' },
-    { title: 'Подписки = обязательства', desc: 'Подписная модель создаёт давление: автор обязан выдавать контент, фан — продлевать подписку.', answer: 'Uppora: разовые донаты. Благодарность, не обязательство' },
-    { title: 'Выплаты через неделю', desc: 'Деньги «на платформе» — вывод раз в неделю, у некоторых — раз в месяц или через 90 дней.', answer: 'Uppora: выплата на карту в тот же день' },
+function Pains() {
+  const items = [
+    { t: '10–15% комиссии', d: 'Типичная платформа забирает 10% комиссии + 3% эквайринг. С каждой тысячи автору — 870\u00A0₽.', a: 'Uppora: 4,5% всего. Автору — 955\u00A0₽' },
+    { t: 'Регистрация для донатера', d: 'Хочешь поддержать автора — создай аккаунт, подтверди email, запомни пароль. Половина уходит.', a: 'Ноль регистрации. QR → сумма → готово' },
+    { t: 'Подписки = обязательства', d: 'Подписная модель создаёт давление: автор обязан выдавать контент, фан — продлевать подписку.', a: 'Разовые донаты. Благодарность, не обязательство' },
+    { t: 'Выплаты через неделю', d: 'Деньги «на платформе» — вывод раз в неделю, у некоторых — раз в месяц или через 90 дней.', a: 'Выплата на карту в тот же день' },
   ]
-
   return (
-    <section id="pain" style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px' }}>
-      <Reveal>
-        <div style={{ textAlign: 'center', marginBottom: 80 }}>
-          <Meta style={{ marginBottom: 16 }}>[ Барьеры индустрии ]</Meta>
-          <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Барьеры, которых не должно быть.</h2>
+    <section id="pain" className="max-w-[1200px] mx-auto px-[var(--padding-edge)] py-28 md:py-36">
+      <R>
+        <div className="text-center mb-16 md:mb-20">
+          <div className="meta mb-4">[ Барьеры индустрии ]</div>
+          <h2 className="serif text-[clamp(2rem,4.5vw,3.2rem)] leading-[1.05]">Барьеры, которых не должно быть.</h2>
         </div>
-      </Reveal>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
-        {pains.map((p, i) => (
-          <Reveal key={i} style={{ transitionDelay: `${i * 0.1}s` }}>
-            <div style={{ padding: 40, borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
-              <Meta style={{ marginBottom: 16 }}>BARRIER.0{i + 1}</Meta>
-              <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 12 }}>{p.title}</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', lineHeight: 1.6, marginBottom: 16 }}>{p.desc}</p>
-              <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.1)', color: 'var(--amber)', fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--amber)' }} />
-                {p.answer}
+      </R>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {items.map((p,i)=>(
+          <R key={i} delay={i*0.08}>
+            <div className="p-8 md:p-10 rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-white/12 transition-colors group h-full flex flex-col">
+              <div className="meta mb-5 text-white/20">BARRIER.0{i+1}</div>
+              <h3 className="serif text-[1.4rem] mb-3 leading-snug">{p.t}</h3>
+              <p className="text-[0.9rem] text-[var(--text-muted)] leading-relaxed flex-1">{p.d}</p>
+              <div className="mt-6 pt-5 border-t border-white/6 flex items-center gap-2.5 text-[var(--amber)] text-[0.85rem] font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--amber)] shrink-0" />
+                {p.a}
               </div>
             </div>
-          </Reveal>
+          </R>
         ))}
       </div>
     </section>
   )
 }
 
-/* ─── Founder Quote ─── */
-function FounderQuote() {
+/* ─── Big Quote ─── */
+function BigQuote({ text, name, role, label }) {
   return (
-    <section style={{ maxWidth: 900, margin: '0 auto', padding: '120px 48px', textAlign: 'center' }}>
-      <Reveal>
-        <Meta style={{ marginBottom: 32 }}>[ Основатель ]</Meta>
-        <blockquote className="serif-text" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: 40 }}>
-          Я видел, как авторы теряют 20–30% заработанного на комиссиях и налогах. Мы нашли способ делать это иначе.
+    <section className="max-w-[900px] mx-auto px-[var(--padding-edge)] py-24 md:py-32 text-center">
+      <R>
+        {label && <div className="meta mb-8">{label}</div>}
+        <blockquote className="serif italic text-[clamp(1.6rem,4vw,3rem)] leading-[1.15] tracking-[-0.015em] mb-10 text-white/90">
+          {text}
         </blockquote>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Илья Панов</span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Основатель Uppora</span>
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[0.8rem] uppercase tracking-[0.1em] font-medium">{name}</span>
+          <span className="text-[0.75rem] text-[var(--text-muted)]">{role}</span>
         </div>
-      </Reveal>
+      </R>
     </section>
   )
 }
 
-/* ─── Workflow (How It Works) ─── */
+/* ─── Workflow ─── */
 function Workflow() {
   const steps = [
-    { num: '01', title: 'Мы создаём страницу.', desc: 'Только имя и карта для выплат. Без загрузки паспорта. Занимает ровно 2 минуты.', tags: ['Консьерж-онбординг', 'Без регистрации', 'Без паспорта'], img: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800' },
-    { num: '02', title: 'Делитесь ссылкой или QR.', desc: 'Ссылка в био, QR на столе в кофейне, стикер на витрине. Один линк — все площадки.', tags: ['QR-кит', 'A5-постер', 'Стикеры'], img: 'https://images.pexels.com/photos/2246476/pexels-photo-2246476.jpeg?auto=compress&cs=tinysrgb&w=800' },
-    { num: '03', title: 'Деньги на карте.', desc: 'Донатер сканирует QR → вводит сумму → готово. Без регистрации. Деньги — в тот же день.', tags: ['Т-Банк', 'В тот же день'], img: 'https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { n:'01', t:'Мы создаём страницу.', d:'Только имя и карта для выплат. Без загрузки паспорта. Занимает ровно 2 минуты.', tags:['Консьерж-онбординг','Без паспорта','2 минуты'], img:'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { n:'02', t:'Делитесь ссылкой или QR.', d:'Ссылка в био, QR на столе в кофейне, стикер на витрине. Один линк — все площадки.', tags:['QR-кит','A5-постер','Стикеры'], img:'https://images.pexels.com/photos/2246476/pexels-photo-2246476.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { n:'03', t:'Деньги на карте.', d:'Донатер сканирует QR → вводит сумму → готово. Без регистрации. Деньги — в тот же день.', tags:['Т-Банк','В тот же день'], img:'https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=600' },
   ]
-
   return (
-    <section id="steps" style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px' }}>
-      <Reveal>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 80, flexWrap: 'wrap', gap: 24 }}>
+    <section id="steps" className="section-line max-w-[1200px] mx-auto px-[var(--padding-edge)] py-28 md:py-36">
+      <R>
+        <div className="flex flex-col md:flex-row justify-between md:items-end gap-6 mb-20 md:mb-24">
           <div>
-            <Meta style={{ marginBottom: 16 }}>[ Три шага ]</Meta>
-            <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Начните за 2 минуты.</h2>
+            <div className="meta mb-4">[ Три шага ]</div>
+            <h2 className="serif text-[clamp(2rem,4.5vw,3.2rem)]">Начните за 2 минуты.</h2>
           </div>
-          <Meta style={{ textAlign: 'right' }}>SEQ_01 — 03<br />ЛИНЕЙНЫЙ ПРОЦЕСС</Meta>
+          <div className="meta text-right opacity-60">SEQ_01 — 03<br/>ЛИНЕЙНЫЙ ПРОЦЕСС</div>
         </div>
-      </Reveal>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 100 }}>
-        {steps.map((s, i) => (
-          <Reveal key={i} style={{ transitionDelay: `${i * 0.1}s` }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 60, alignItems: 'center', direction: i % 2 === 1 ? 'rtl' : 'ltr' }}>
-              <div style={{ direction: 'ltr' }}>
-                <div className="serif-text" style={{ fontSize: 'clamp(5rem, 10vw, 8rem)', lineHeight: 0.8, color: 'var(--text-meta)', opacity: 0.3, marginBottom: 24 }}>{s.num}</div>
-                <h3 className="serif-text" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', marginBottom: 16, lineHeight: 1.2 }}>{s.title}</h3>
-                <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', fontWeight: 300, maxWidth: 400 }}>{s.desc}</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
-                  {s.tags.map((t, ti) => (
-                    <span key={ti} style={{ border: '1px solid rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: 30, fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t}</span>
+      </R>
+      <div className="flex flex-col gap-28 md:gap-36">
+        {steps.map((s,i)=>(
+          <R key={i} delay={i*0.1}>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center ${i%2===1 ? 'md:[direction:rtl]' : ''}`}>
+              <div className={i%2===1 ? 'md:[direction:ltr]' : ''}>
+                <div className="serif text-[clamp(4rem,8vw,7rem)] leading-[0.75] text-white/[0.04] mb-6 select-none">{s.n}</div>
+                <h3 className="serif text-[clamp(1.6rem,3vw,2.2rem)] mb-4 leading-snug">{s.t}</h3>
+                <p className="text-[1rem] text-[var(--text-muted)] font-light max-w-[380px] leading-relaxed">{s.d}</p>
+                <div className="flex flex-wrap gap-2.5 mt-6">
+                  {s.tags.map((tag,ti)=>(
+                    <span key={ti} className="border border-white/10 px-4 py-1.5 rounded-full text-[0.7rem] text-white/40 hover:text-white/60 hover:border-white/20 transition-colors">{tag}</span>
                   ))}
                 </div>
               </div>
-              <div style={{ direction: 'ltr', width: '100%', aspectRatio: '4/5', background: '#111', borderRadius: 16, overflow: 'hidden', position: 'relative' }}>
-                <img src={s.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8, transition: 'opacity 0.5s ease' }} />
-                <Meta style={{ position: 'absolute', bottom: 24, right: 24, background: 'rgba(0,0,0,0.5)', padding: '4px 8px' }}>IMG_SRC: RAW</Meta>
+              <div className={`rounded-2xl overflow-hidden relative group ${i%2===1?'md:[direction:ltr]':''}`} style={{ aspectRatio:'4/5', background:'#0a0a0a' }}>
+                <img src={s.img} alt="" className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-700" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="meta absolute bottom-5 right-5 bg-black/60 px-2 py-1 rounded">IMG_SRC: RAW</div>
               </div>
             </div>
-          </Reveal>
+          </R>
         ))}
       </div>
+      <R delay={0.1} className="text-center mt-16">
+        <a href="#final-cta" className="inline-block bg-[var(--amber)] text-black px-8 py-3.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity no-underline">Оставить заявку →</a>
+      </R>
     </section>
   )
 }
 
 /* ─── Calculator ─── */
-function Calculator() {
-  const [value, setValue] = useState(1000)
-  const bank = Math.round(value * 0.03)
-  const uppora = Math.round(value * 0.015)
-  const author = value - bank - uppora
-  const pct = ((author / value) * 100).toFixed(1)
-  const fmt = (n) => n.toLocaleString('ru-RU')
-
+function Calc() {
+  const [val, setVal] = useState(1000)
+  const bank = Math.round(val*0.03), upp = Math.round(val*0.015), auth = val-bank-upp
+  const pct = ((auth/val)*100).toFixed(1)
+  const f = n => n.toLocaleString('ru-RU')
   return (
-    <section style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center' }}>
-        <Reveal>
-          <Meta style={{ marginBottom: 16 }}>[ Калькулятор ]</Meta>
-          <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginBottom: 40 }}>Открытая бухгалтерия.</h2>
-        </Reveal>
-        <Reveal style={{ transitionDelay: '0.1s' }}>
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: '32px 40px' }}>
-            <Meta style={{ textAlign: 'left', marginBottom: 8 }}>Сумма доната</Meta>
-            <div className="serif-text" style={{ fontSize: '3rem', marginBottom: 24 }}>
-              {fmt(value)} <span style={{ fontSize: '1.5rem', color: 'var(--text-muted)' }}>₽</span>
-            </div>
-            <input
-              type="range" min="100" max="10000" step="100" value={value}
-              onChange={e => setValue(+e.target.value)}
-              style={{ width: '100%', height: 4, borderRadius: 2, appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.1)', cursor: 'pointer', marginBottom: 32, outline: 'none' }}
-            />
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.875rem', textAlign: 'left' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Автору</span>
-                <span className="serif-text" style={{ fontSize: '1.5rem', color: 'var(--amber)', fontWeight: 500 }}>{fmt(author)} ₽</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Банку (процессинг)</span>
-                <span>{fmt(bank)} ₽</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Uppora</span>
-                <span>{fmt(uppora)} ₽</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: '2px solid var(--amber)', marginTop: 8, fontWeight: 700 }}>
-                <span>ИТОГО</span>
-                <span>{fmt(value)} ₽</span>
-              </div>
-            </div>
-            <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginTop: 24 }}>
-              <div style={{ height: '100%', borderRadius: 3, background: 'var(--amber)', transition: 'width 0.3s', width: `${pct}%` }} />
-            </div>
-            <p style={{ marginTop: 16, fontSize: '0.75rem', color: 'var(--text-meta)' }}>Альфа: комиссия 4,5% (3% эквайринг + 1,5% вывод). У конкурентов: 10–15%.</p>
+    <section className="section-line max-w-[1200px] mx-auto px-[var(--padding-edge)] py-28 md:py-36">
+      <div className="max-w-[480px] mx-auto">
+        <R>
+          <div className="text-center mb-10">
+            <div className="meta mb-4">[ Калькулятор ]</div>
+            <h2 className="serif text-[clamp(2rem,4.5vw,3.2rem)]">Открытая бухгалтерия.</h2>
           </div>
-        </Reveal>
-        <Reveal style={{ transitionDelay: '0.2s' }}>
-          <p className="serif-text" style={{ fontStyle: 'italic', fontSize: '1.125rem', color: 'var(--text-muted)', marginTop: 32, maxWidth: 460, marginInline: 'auto' }}>
-            «Мы зарабатываем <span style={{ color: 'var(--amber)', fontStyle: 'normal', fontWeight: 500 }}>15 ₽</span> с каждой тысячи. Не берём подписку. Не берём комиссию за контент. 15 рублей — наш единственный доход.»
+        </R>
+        <R delay={0.1}>
+          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-8 md:p-10">
+            <div className="meta mb-2">Сумма доната</div>
+            <div className="serif text-[2.8rem] mb-6 tracking-tight">{f(val)} <span className="text-[1.4rem] text-white/30">₽</span></div>
+            <input type="range" min="100" max="10000" step="100" value={val} onChange={e=>setVal(+e.target.value)} className="mb-8" />
+            <div className="mono text-[0.85rem] space-y-0">
+              {[
+                ['Автору', f(auth)+' ₽', 'text-[var(--amber)] serif text-[1.3rem] font-medium'],
+                ['Банку (процессинг)', f(bank)+' ₽', 'text-white/60'],
+                ['Uppora', f(upp)+' ₽', 'text-white/60'],
+              ].map(([label, value, cls],i)=>(
+                <div key={i} className="flex justify-between items-center py-3 border-b border-white/6">
+                  <span className="text-white/40">{label}</span>
+                  <span className={cls}>{value}</span>
+                </div>
+              ))}
+              <div className="flex justify-between items-center py-3 mt-1 border-t-2 border-[var(--amber)] font-bold text-white">
+                <span>ИТОГО</span><span>{f(val)} ₽</span>
+              </div>
+            </div>
+            <div className="h-1.5 rounded-full bg-white/6 overflow-hidden mt-6">
+              <div className="h-full rounded-full bg-[var(--amber)] transition-all duration-300" style={{width:`${pct}%`}} />
+            </div>
+            <p className="meta text-center mt-4 opacity-60">Альфа: 4,5% (3% эквайринг + 1,5% вывод). Конкуренты: 10–15%.</p>
+          </div>
+        </R>
+        <R delay={0.2}>
+          <p className="serif italic text-[1.05rem] text-white/40 mt-8 text-center leading-relaxed">
+            «Мы зарабатываем <span className="text-[var(--amber)] not-italic font-medium">15&nbsp;₽</span> с каждой тысячи. 15 рублей — наш единственный доход.»
           </p>
-        </Reveal>
+        </R>
       </div>
     </section>
   )
 }
 
-/* ─── Comparison Table ─── */
-function Comparison() {
+/* ─── Comparison ─── */
+function Compare() {
+  const hdr = ['Характеристика','Uppora','Boosty','DonationAlerts','Patreon','Ko-fi']
   const rows = [
-    ['Итого комиссия', '4,5%', '~11,7%', '~12%', '~13–15%', '~3–8%'],
-    ['Регистрация донатера', '✓ Не нужна', '✗ Нужна', '✗ Нужна', '✗ Нужна', '✗ PayPal'],
-    ['Скорость выплат', 'В тот же день', '1–5 дней', 'До 90 дней', 'Раз в месяц', 'Напрямую'],
-    ['Офлайн (QR-кит)', '✓ Есть', '✗', '✗', '✗', '✗'],
-    ['НДФЛ для автора', '0% (дарение)', '13%+', '13%+', 'По стране', 'По стране'],
-    ['Модель', 'Разовые донаты', 'Подписки', 'Стрим-донаты', 'Подписки', 'Донаты + подписки'],
-    ['Онбординг', 'Консьерж', 'Self-serve', 'Self-serve', 'Self-serve', 'Self-serve'],
+    ['Итого комиссия','4,5%','~11,7%','~12%','~13–15%','~3–8%'],
+    ['Регистрация донатера','✓ Не нужна','✗ Нужна','✗ Нужна','✗ Нужна','✗ PayPal'],
+    ['Скорость выплат','В тот же день','1–5 дней','До 90 дней','Раз в месяц','Напрямую'],
+    ['Офлайн (QR-кит)','✓ Есть','✗','✗','✗','✗'],
+    ['НДФЛ для автора','0% (дарение)','13%+','13%+','По стране','По стране'],
+    ['Модель','Разовые донаты','Подписки','Стрим-донаты','Подписки','Донаты + подписки'],
+    ['Онбординг','Консьерж','Self-serve','Self-serve','Self-serve','Self-serve'],
   ]
-  const headers = ['Характеристика', 'Uppora', 'Boosty', 'DonationAlerts', 'Patreon', 'Ko-fi']
-
+  const cellColor = (cell, ci) => {
+    if (ci === 1) return 'text-[var(--amber)] font-medium'
+    if (typeof cell === 'string' && cell.startsWith('✓')) return 'text-[var(--emerald)]'
+    if (typeof cell === 'string' && cell.startsWith('✗')) return 'text-[var(--red)] opacity-50'
+    if (ci === 0) return 'text-white/80 font-medium'
+    return 'text-white/30'
+  }
   return (
-    <section id="compare" style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <Reveal>
-        <Meta style={{ marginBottom: 16 }}>[ Сравнение ]</Meta>
-        <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginBottom: 8 }}>Uppora vs. конкуренты.</h2>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: 48 }}>На основе публичных тарифов, март 2026</p>
-      </Reveal>
-      <Reveal style={{ transitionDelay: '0.1s' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', textAlign: 'left', fontSize: '0.875rem', borderCollapse: 'collapse', minWidth: 700 }}>
+    <section id="compare" className="section-line max-w-[1200px] mx-auto px-[var(--padding-edge)] py-28 md:py-36">
+      <R>
+        <div className="mb-12 md:mb-16">
+          <div className="meta mb-4">[ Сравнение ]</div>
+          <h2 className="serif text-[clamp(2rem,4.5vw,3.2rem)] mb-2">Uppora vs. конкуренты.</h2>
+          <p className="text-[0.85rem] text-white/30">На основе публичных тарифов, март 2026</p>
+        </div>
+      </R>
+      <R delay={0.1}>
+        <div className="overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)]">
+          <table className="w-full text-left text-[0.85rem] min-w-[720px]">
             <thead>
-              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                {headers.map((h, i) => (
-                  <th key={i} className="meta-text" style={{ padding: '16px 12px', fontWeight: 400, color: i === 1 ? 'var(--amber)' : undefined }}>{h}</th>
+              <tr className="border-b border-white/8">
+                {hdr.map((h,i)=>(
+                  <th key={i} className={`py-4 px-5 meta font-normal ${i===1?'text-[var(--amber)]':''}`}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  {row.map((cell, ci) => {
-                    let color = 'var(--text-muted)'
-                    if (ci === 0) color = 'var(--text-main)'
-                    if (ci === 1) color = 'var(--amber)'
-                    if (typeof cell === 'string' && cell.startsWith('✓')) color = 'var(--emerald)'
-                    if (typeof cell === 'string' && cell.startsWith('✗')) color = 'var(--red)'
-                    return (
-                      <td key={ci} style={{ padding: '14px 12px', color, fontWeight: ci <= 1 ? 500 : 400, opacity: ci > 1 ? 0.6 : 1 }}>{cell}</td>
-                    )
-                  })}
+              {rows.map((row,ri)=>(
+                <tr key={ri} className="border-b border-white/4 hover:bg-white/[0.015] transition-colors">
+                  {row.map((cell,ci)=>(
+                    <td key={ci} className={`py-3.5 px-5 ${cellColor(cell,ci)}`}>{cell}</td>
+                  ))}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-meta)', textAlign: 'center', marginTop: 24 }}>Данные из публичных тарифов платформ. Комиссии включают все сборы.</p>
-      </Reveal>
+        <p className="meta text-center mt-5 opacity-40">Комиссии включают все сборы: платформа + эквайринг + вывод.</p>
+      </R>
     </section>
   )
 }
 
-/* ─── Legal Model ─── */
-function LegalModel() {
-  const standardSteps = ['Донат отправляется', 'Попадает на счёт платформы (ООО)', 'Комиссия платформы 10–15%', 'Удержание НДФЛ 13%', 'Запрос на вывод средств', 'Остаток доходит автору']
-  const upporaSteps = ['Донатер отправляет деньги', 'Деньги сразу на карте автора']
-
+/* ─── Legal ─── */
+function Legal() {
   return (
-    <section id="legal" style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <Reveal>
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <Meta style={{ marginBottom: 16 }}>[ Юридическая модель ]</Meta>
-          <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Две модели. Мы выбрали лучшую.</h2>
+    <section id="legal" className="section-line max-w-[1200px] mx-auto px-[var(--padding-edge)] py-28 md:py-36">
+      <R>
+        <div className="text-center mb-14">
+          <div className="meta mb-4">[ Юридическая модель ]</div>
+          <h2 className="serif text-[clamp(2rem,4.5vw,3.2rem)]">Две модели. Мы выбрали лучшую.</h2>
         </div>
-      </Reveal>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, maxWidth: 900, margin: '0 auto' }}>
-        <Reveal style={{ transitionDelay: '0.1s' }}>
-          <div style={{ padding: 40, borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)', opacity: 0.5 }}>
-            <Meta style={{ marginBottom: 16, color: 'var(--red)' }}>STD.PATH // REJECTED</Meta>
-            <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 24 }}>Оплата услуг</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {standardSteps.map((step, j) => (
-                <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: 'var(--red)', fontFamily: "'Space Mono', monospace" }}>{j + 1}</span>
-                  <span>{step}</span>
+      </R>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[860px] mx-auto">
+        <R delay={0.1}>
+          <div className="p-8 md:p-10 rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] opacity-40 h-full">
+            <div className="meta text-[var(--red)] mb-5">STD.PATH // REJECTED</div>
+            <h3 className="serif text-[1.4rem] mb-6">Оплата услуг</h3>
+            <div className="space-y-2.5 text-[0.85rem] text-white/40">
+              {['Донат отправляется','На счёт платформы (ООО)','Комиссия 10–15%','Удержание НДФЛ 13%','Запрос на вывод','Остаток автору'].map((s,j)=>(
+                <div key={j} className="flex items-start gap-3">
+                  <span className="shrink-0 w-5 h-5 rounded-full border border-[var(--red)]/20 flex items-center justify-center text-[0.55rem] text-[var(--red)] mono">{j+1}</span>
+                  <span>{s}</span>
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.1)', color: 'var(--red)', fontWeight: 500, fontSize: '0.875rem' }}>
-              Потери: до 25–30% с каждого доната
-            </div>
+            <div className="mt-6 pt-4 border-t border-white/6 text-[var(--red)] font-medium text-[0.85rem]">Потери: до 25–30%</div>
           </div>
-        </Reveal>
-        <Reveal style={{ transitionDelay: '0.2s' }}>
-          <div style={{ padding: 40, borderRadius: 16, border: '1px solid rgba(245,158,11,0.4)', background: 'rgba(255,255,255,0.03)' }}>
-            <Meta style={{ marginBottom: 16, color: 'var(--amber)' }}>UPP.PATH // ACTIVE</Meta>
-            <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 24 }}>Договор дарения</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {upporaSteps.map((step, j) => (
-                <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', border: '1px solid rgba(245,158,11,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: 'var(--amber)', fontFamily: "'Space Mono', monospace" }}>{j + 1}</span>
-                  <span>{step}</span>
+        </R>
+        <R delay={0.2}>
+          <div className="p-8 md:p-10 rounded-2xl bg-[var(--card-bg)] border border-[var(--amber)]/25 h-full">
+            <div className="meta text-[var(--amber)] mb-5">UPP.PATH // ACTIVE</div>
+            <h3 className="serif text-[1.4rem] mb-6">Договор дарения</h3>
+            <div className="space-y-2.5 text-[0.85rem] text-white/50">
+              {['Донатер отправляет деньги','Деньги сразу на карте автора'].map((s,j)=>(
+                <div key={j} className="flex items-start gap-3">
+                  <span className="shrink-0 w-5 h-5 rounded-full border border-[var(--amber)]/25 flex items-center justify-center text-[0.55rem] text-[var(--amber)] mono">{j+1}</span>
+                  <span>{s}</span>
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 32, paddingTop: 16, borderTop: '1px solid rgba(245,158,11,0.3)', color: 'var(--amber)', fontWeight: 500, fontSize: '0.875rem', lineHeight: 1.8 }}>
-              Основание: ст. 217 НК РФ<br />НДФЛ: 0%<br />Статус ИП/самозанятого: не нужен
+            <div className="mt-8 pt-5 border-t border-[var(--amber)]/20 text-[var(--amber)] font-medium text-[0.85rem] leading-[1.8]">
+              Основание: ст. 217 НК РФ<br/>НДФЛ: 0%<br/>ИП/самозанятый: не нужен
             </div>
           </div>
-        </Reveal>
+        </R>
       </div>
-      <Reveal style={{ transitionDelay: '0.3s' }}>
-        <p style={{ textAlign: 'center', marginTop: 32, fontSize: '0.75rem', color: 'var(--text-meta)' }}>Дарение между физическими лицами не облагается НДФЛ по ст. 217 НК РФ, п. 18.1</p>
-      </Reveal>
+      <R delay={0.3} className="text-center mt-8"><p className="meta opacity-40">Ст. 217 НК РФ, п. 18.1 — дарение между физлицами не облагается НДФЛ</p></R>
     </section>
   )
 }
@@ -440,22 +385,20 @@ function LegalModel() {
 /* ─── Benefits ─── */
 function Benefits() {
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 48px 120px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
-        <Reveal>
-          <div style={{ padding: 40, background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Meta style={{ marginBottom: 16 }}>FIN.OPEN // 01</Meta>
-            <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 12 }}>Процессинг карт</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6 }}>3% покрывает стоимость эквайринга через Т-Банк. Оставшиеся 1,5% — это всё, что получает Uppora.</p>
-          </div>
-        </Reveal>
-        <Reveal style={{ transitionDelay: '0.1s' }}>
-          <div style={{ padding: 40, background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Meta style={{ marginBottom: 16 }}>FIN.OPEN // 02</Meta>
-            <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 12 }}>Инфраструктура и развитие</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6 }}>Серверы, безопасность, поддержка 24/7. Постоянные улучшения для авторов.</p>
-          </div>
-        </Reveal>
+    <div className="section-line max-w-[1200px] mx-auto px-[var(--padding-edge)] py-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {[
+          {code:'FIN.OPEN // 01', t:'Процессинг карт', d:'3% покрывает стоимость эквайринга через Т-Банк. 1,5% — всё, что получает Uppora.'},
+          {code:'FIN.OPEN // 02', t:'Инфраструктура и развитие', d:'Серверы, безопасность, поддержка 24/7. Постоянные улучшения для авторов.'},
+        ].map((b,i)=>(
+          <R key={i} delay={i*0.1}>
+            <div className="p-8 md:p-10 bg-[var(--card-bg)] rounded-2xl border border-[var(--card-border)]">
+              <div className="meta mb-4">{b.code}</div>
+              <h3 className="serif text-[1.3rem] mb-3">{b.t}</h3>
+              <p className="text-[0.9rem] text-[var(--text-muted)] leading-relaxed">{b.d}</p>
+            </div>
+          </R>
+        ))}
       </div>
     </div>
   )
@@ -463,75 +406,57 @@ function Benefits() {
 
 /* ─── Marquee ─── */
 function Marquee() {
-  const items = ['Комиссия 4,5%', 'Без регистрации', 'Вывод в тот же день', '0% НДФЛ', 'QR-кит бесплатно', 'Договор дарения']
-
+  const items = ['Комиссия 4,5%','Без регистрации','Вывод в тот же день','0% НДФЛ','QR-кит бесплатно','Договор дарения']
+  const Item = () => items.map((t,i)=>(
+    <span key={i} className="inline-flex items-center gap-[3vw] px-[3vw]">
+      <span className={`serif text-[clamp(1.3rem,2.5vw,2rem)] whitespace-nowrap ${t.includes('4,5%')||t.includes('0%')?'text-white':'text-white/25'}`}>{t}</span>
+      <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
+    </span>
+  ))
   return (
-    <section style={{ width: '100%', overflow: 'hidden', padding: '80px 0', background: '#050505', position: 'relative' }}>
-      <Meta style={{ position: 'absolute', top: 32, left: 48, zIndex: 20 }}>[ Ключевые преимущества ]</Meta>
-      <div style={{ position: 'absolute', inset: '0 auto 0 0', width: '15vw', zIndex: 10, background: 'linear-gradient(to right, #050505, transparent)' }} />
-      <div style={{ position: 'absolute', inset: '0 0 0 auto', width: '15vw', zIndex: 10, background: 'linear-gradient(to left, #050505, transparent)' }} />
-      <div style={{ display: 'flex', width: 'fit-content', animation: 'marquee-scroll 30s linear infinite' }}>
-        {[0, 1].map(set => (
-          <div key={set} style={{ display: 'flex', alignItems: 'center' }}>
-            {items.map((item, i) => (
-              <span key={`${set}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4vw', padding: '0 4vw' }}>
-                <span className="serif-text" style={{ fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', whiteSpace: 'nowrap', color: item.includes('4,5%') || item.includes('0%') ? 'var(--text-main)' : 'var(--text-muted)' }}>
-                  {item}
-                </span>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--text-meta)' }} />
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
+    <section className="w-full overflow-hidden py-20 relative bg-[#030303]">
+      <div className="meta absolute top-6 left-[var(--padding-edge)] z-20">[ Ключевые преимущества ]</div>
+      <div className="absolute inset-y-0 left-0 w-[12vw] z-10 bg-gradient-to-r from-[#030303] to-transparent" />
+      <div className="absolute inset-y-0 right-0 w-[12vw] z-10 bg-gradient-to-l from-[#030303] to-transparent" />
+      <div className="marquee-track"><Item /><Item /></div>
     </section>
   )
 }
 
 /* ─── FAQ ─── */
 function FAQ() {
-  const [openIndex, setOpenIndex] = useState(null)
-  const questions = [
-    { q: 'Есть ли отзывы?', a: 'Мы сейчас на стадии альфы, поэтому пока собираем первую волну авторов. Зато сейчас можно подключиться в числе первых и спокойно протестировать сервис на старте.' },
-    { q: 'Почему подключаете к платформе сами?', a: 'Чтобы вам не пришлось разбираться в регистрации и настройках. Мы берём создание страницы на себя, всё настраиваем за пару минут.' },
-    { q: 'Почему такая низкая комиссия?', a: 'Мы изначально хотели сделать сервис доступным. Комиссия максимально комфортная, чтобы донаты оставались рабочим инструментом монетизации.' },
-    { q: 'Могу зарегистрироваться и начать позднее?', a: 'Да, конечно. Страница никуда не исчезнет и не «сгорит».' },
-    { q: 'У меня уже есть Boosty / VK Донаты — нужно ли отключаться?', a: 'Нет. Uppora работает параллельно с другими сервисами донатов.' },
-    { q: 'Зачем мне дополнительный сервис для донатов?', a: 'Далеко не все готовы оформлять ежемесячную подписку. Часто человек хочет просто поддержать автора один раз. Для этого и создана Uppora.' },
-    { q: 'Можно ли вывести на зарубежную карту?', a: 'Пока нет, сейчас вывод доступен только на карту РФ. В будущем планируем добавить другие варианты.' },
-    { q: 'Сколько времени занимает подключение?', a: 'Обычно всего несколько минут. Мы сами помогаем с настройкой.' },
-    { q: 'Нужно ли что-то регулярно обновлять или вести?', a: 'Нет. После подключения страница готова к использованию.' },
-    { q: 'Это замена другим способам монетизации?', a: 'Скорее дополнение. Uppora подходит для разовой поддержки и может работать вместе с подписками.' },
-    { q: 'На чём зарабатывает Uppora?', a: 'С каждой тысячи рублей мы получаем 15 ₽ (1,5%). Ещё 30 ₽ (3%) забирает банк. Итого 4,5%. Никаких подписок и скрытых сборов.' },
-    { q: 'А что с налогами?', a: 'Донаты оформляются как договор дарения. По ст. 217 НК РФ не облагаются НДФЛ. Статус ИП не требуется.' },
+  const [open, setOpen] = useState(null)
+  const qs = [
+    ['Есть ли отзывы?','Мы на стадии альфы — собираем первую волну авторов. Можно подключиться в числе первых и протестировать.'],
+    ['Почему подключаете к платформе сами?','Чтобы вам не разбираться в настройках. Создаём страницу за пару минут.'],
+    ['Почему такая низкая комиссия?','Сделали комфортной, чтобы донаты оставались рабочим инструментом монетизации.'],
+    ['Могу зарегистрироваться и начать позднее?','Да. Страница никуда не исчезнет.'],
+    ['У меня есть Boosty / VK Донаты — отключаться?','Нет. Uppora работает параллельно.'],
+    ['Зачем мне ещё один сервис для донатов?','Не все готовы оформлять подписку. Часто хочется поддержать один раз, здесь и сейчас.'],
+    ['Можно вывести на зарубежную карту?','Пока нет, только РФ. Планируем добавить.'],
+    ['Сколько времени занимает подключение?','Несколько минут. Мы помогаем с настройкой.'],
+    ['Нужно ли что-то обновлять?','Нет. Страница готова сразу после подключения.'],
+    ['Это замена другим способам монетизации?','Скорее дополнение — работает вместе с подписками и другими сервисами.'],
+    ['На чём зарабатывает Uppora?','15 ₽ с каждой тысячи (1,5%). Плюс 30 ₽ (3%) банку. Итого 4,5%. Без скрытых сборов.'],
+    ['А что с налогами?','Договор дарения — ст. 217 НК РФ. НДФЛ 0%. Статус ИП не нужен.'],
   ]
-
   return (
-    <section id="faq" style={{ maxWidth: 720, margin: '0 auto', padding: '120px 48px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <Reveal>
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <Meta style={{ marginBottom: 16 }}>[ FAQ ]</Meta>
-          <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Частые вопросы.</h2>
+    <section id="faq" className="section-line max-w-[700px] mx-auto px-[var(--padding-edge)] py-28 md:py-36">
+      <R>
+        <div className="text-center mb-12">
+          <div className="meta mb-4">[ FAQ ]</div>
+          <h2 className="serif text-[clamp(2rem,4vw,2.8rem)]">Частые вопросы.</h2>
         </div>
-      </Reveal>
+      </R>
       <div>
-        {questions.map((item, i) => (
-          <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-            <button
-              onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              style={{
-                width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '20px 0', textAlign: 'left', cursor: 'pointer',
-                background: 'none', border: 'none', color: openIndex === i ? 'var(--amber)' : 'var(--text-main)',
-                fontFamily: "'Inter', sans-serif", fontSize: '0.9375rem', fontWeight: 500,
-                transition: 'color 0.3s',
-              }}
-            >
-              <span style={{ paddingRight: 16 }}>{item.q}</span>
-              <span style={{ color: 'var(--text-meta)', fontSize: '1.25rem', flexShrink: 0, transition: 'transform 0.3s', transform: openIndex === i ? 'rotate(45deg)' : 'none' }}>+</span>
+        {qs.map(([q,a],i)=>(
+          <div key={i} className="border-b border-white/6">
+            <button onClick={()=>setOpen(open===i?null:i)} className="w-full flex justify-between items-center py-5 text-left cursor-pointer bg-transparent border-none text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <span className={`text-[0.9rem] font-medium pr-4 transition-colors duration-300 ${open===i?'text-[var(--amber)]':''}`}>{q}</span>
+              <span className={`text-white/20 text-lg shrink-0 transition-transform duration-300 ${open===i?'rotate-45':''}`}>+</span>
             </button>
-            <div style={{ overflow: 'hidden', maxHeight: openIndex === i ? 200 : 0, transition: 'max-height 0.4s ease', paddingBottom: openIndex === i ? 20 : 0 }}>
-              <p style={{ fontSize: '0.9375rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>{item.a}</p>
+            <div className={`overflow-hidden transition-all duration-400 ${open===i?'max-h-40 pb-5':'max-h-0'}`}>
+              <p className="text-[0.875rem] text-[var(--text-muted)] leading-relaxed">{a}</p>
             </div>
           </div>
         ))}
@@ -540,64 +465,36 @@ function FAQ() {
   )
 }
 
-/* ─── Final CTA ─── */
-function FinalCTA() {
+/* ─── CTA ─── */
+function CTA() {
   return (
-    <section id="final-cta" style={{ maxWidth: 520, margin: '0 auto', padding: '120px 48px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <Reveal>
-        <Meta style={{ marginBottom: 24 }}>[ Заявка ]</Meta>
-        <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: 16 }}>Бесплатно. Без паспорта. Без подписки.</h2>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: 40 }}>Оставьте заявку — мы настроим страницу и QR за вас. Ответим в течение 2 часов.</p>
-      </Reveal>
-      <Reveal style={{ transitionDelay: '0.1s' }}>
-        <form style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-          {[
-            { type: 'text', placeholder: 'Ваше имя' },
-            { type: 'email', placeholder: 'Email' },
-          ].map((f, i) => (
-            <input key={i} type={f.type} placeholder={f.placeholder} style={{
-              padding: '16px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.03)', color: 'white', fontSize: '0.875rem',
-              fontFamily: "'Inter', sans-serif", outline: 'none',
-            }} />
+    <section id="final-cta" className="section-line max-w-[480px] mx-auto px-[var(--padding-edge)] py-28 md:py-36 text-center">
+      <R>
+        <div className="meta mb-6">[ Заявка ]</div>
+        <h2 className="serif text-[clamp(2rem,5vw,2.8rem)] mb-4 leading-[1.1]">Бесплатно.<br/>Без паспорта. Без подписки.</h2>
+        <p className="text-[0.85rem] text-[var(--text-muted)] mb-10">Мы настроим страницу и QR за вас. Ответим за 2 часа.</p>
+      </R>
+      <R delay={0.1}>
+        <form className="flex flex-col gap-3 mb-6 text-left">
+          {[['text','Ваше имя'],['email','Email']].map(([t,p],i)=>(
+            <input key={i} type={t} placeholder={p} className="w-full px-5 py-3.5 rounded-xl border border-white/8 bg-white/[0.02] text-white text-[0.85rem] outline-none focus:border-[var(--amber)]/40 transition-colors placeholder:text-white/20" style={{fontFamily:"'Inter',sans-serif"}} />
           ))}
-          <select style={{
-            padding: '16px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(255,255,255,0.03)', color: 'var(--text-meta)', fontSize: '0.875rem',
-            fontFamily: "'Inter', sans-serif", outline: 'none', appearance: 'none', WebkitAppearance: 'none',
-          }}>
+          <select className="w-full px-5 py-3.5 rounded-xl border border-white/8 bg-white/[0.02] text-white/20 text-[0.85rem] outline-none focus:border-[var(--amber)]/40 transition-colors appearance-none" style={{fontFamily:"'Inter',sans-serif"}}>
             <option value="" disabled selected>Ваша ниша</option>
-            <option value="music">Музыка</option>
-            <option value="education">Образование / лекции</option>
-            <option value="art">Искусство / хендмейд</option>
-            <option value="streaming">Стримы / видео</option>
-            <option value="nko">НКО / благотворительность</option>
-            <option value="other">Другое</option>
+            <option>Музыка</option><option>Образование</option><option>Искусство</option><option>Стримы</option><option>НКО</option><option>Другое</option>
           </select>
-          <button type="button" style={{
-            background: 'var(--amber)', color: '#000', padding: '16px 32px', borderRadius: 12,
-            fontWeight: 500, fontSize: '0.875rem', border: 'none', cursor: 'pointer', marginTop: 8,
-            fontFamily: "'Inter', sans-serif",
-          }}>
+          <button type="button" className="w-full bg-[var(--amber)] text-black py-3.5 rounded-xl text-[0.85rem] font-medium mt-1 cursor-pointer border-none hover:opacity-90 transition-opacity" style={{fontFamily:"'Inter',sans-serif"}}>
             Оставить заявку →
           </button>
         </form>
-      </Reveal>
-      <Reveal style={{ transitionDelay: '0.2s' }}>
-        <a href="https://t.me/uppora_support" target="_blank" rel="noopener" style={{
-          display: 'inline-block', fontSize: '0.75rem', color: 'var(--text-muted)',
-          border: '1px solid rgba(255,255,255,0.1)', padding: '8px 20px', borderRadius: 30,
-          textDecoration: 'none', marginBottom: 24,
-        }}>
-          Или напишите в Telegram
-        </a>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-meta)', marginBottom: 24 }}>Удалить аккаунт можно в один клик. Нет донатов — нет расходов.</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'center' }}>
-          <Meta>SSL + PCI DSS</Meta>
-          <Meta>Ст. 217 НК РФ</Meta>
-          <Meta>Т-Банк</Meta>
+      </R>
+      <R delay={0.2}>
+        <a href="https://t.me/uppora_support" target="_blank" rel="noopener" className="inline-block text-[0.7rem] text-white/30 border border-white/8 px-5 py-2 rounded-full hover:border-white/15 transition-colors no-underline mb-6">Или в Telegram</a>
+        <p className="meta opacity-40 mb-5">Удалить аккаунт — один клик. Нет донатов — нет расходов.</p>
+        <div className="flex flex-wrap gap-5 justify-center">
+          {['SSL + PCI DSS','Ст. 217 НК РФ','Т-Банк'].map((t,i)=><span key={i} className="meta opacity-30">{t}</span>)}
         </div>
-      </Reveal>
+      </R>
     </section>
   )
 }
@@ -605,9 +502,9 @@ function FinalCTA() {
 /* ─── Footer ─── */
 function Footer() {
   return (
-    <footer style={{ padding: '48px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-      <div style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-0.02em' }}>Uppora — 2026</div>
-      <Meta>SYSTEM NORM: NOMINAL</Meta>
+    <footer className="section-line px-[var(--padding-edge)] py-10 flex flex-wrap justify-between items-center gap-4">
+      <span className="text-[0.85rem] font-medium tracking-tight">Uppora — 2026</span>
+      <span className="meta opacity-40">SYSTEM NORM: NOMINAL</span>
     </footer>
   )
 }
@@ -616,22 +513,32 @@ function Footer() {
 export default function App() {
   return (
     <>
-      <BgGrid />
+      <div className="bg-grid" />
       <Header />
-      <main style={{ paddingTop: 160 }}>
+      <main>
         <Hero />
         <SpatialGallery />
-        <TrustBar />
-        <PainSection />
-        <FounderQuote />
+        <Trust />
+        <Pains />
+        <BigQuote
+          label="[ Основатель ]"
+          text="Я видел, как авторы теряют 20–30% заработанного на комиссиях и налогах. Мы нашли способ делать это иначе."
+          name="Илья Панов"
+          role="Основатель Uppora"
+        />
         <Workflow />
-        <Calculator />
-        <Comparison />
-        <LegalModel />
+        <Calc />
+        <Compare />
+        <Legal />
         <Benefits />
+        <BigQuote
+          text="Через договор дарения, где комиссия всего 4,5%. Мы убрали посредника, чтобы вы оставались в потоке."
+          name="Илья Панов"
+          role="Основатель Uppora"
+        />
         <Marquee />
         <FAQ />
-        <FinalCTA />
+        <CTA />
       </main>
       <Footer />
     </>
