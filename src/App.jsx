@@ -39,12 +39,13 @@ const Meta = ({ children, className = '', style = {} }) => (
   <div className={`meta-text ${className}`} style={style}>{children}</div>
 )
 
-/* ─── Background Grid ─── */
+/* ─── Background Grid (CSS only) ─── */
 function BgGrid() {
   return (
     <div
-      className="fixed inset-0 pointer-events-none -z-10"
+      className="fixed inset-0 pointer-events-none"
       style={{
+        zIndex: -1,
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
         backgroundSize: '100px 100px',
         backgroundPosition: 'center center',
@@ -58,14 +59,14 @@ function BgGrid() {
 /* ─── Header ─── */
 function Header() {
   return (
-    <header className="fixed top-0 w-full z-50 flex justify-between items-center px-8 md:px-12 py-8" style={{ mixBlendMode: 'difference' }}>
+    <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-6 md:py-8" style={{ mixBlendMode: 'difference' }}>
       <div className="text-base font-medium" style={{ letterSpacing: '-0.02em' }}>Uppora —</div>
       <nav className="hidden md:flex gap-8">
         {[['#pain', 'Проблемы'], ['#steps', 'Как работает'], ['#compare', 'Сравнение'], ['#faq', 'FAQ']].map(([href, label]) => (
-          <a key={href} href={href} className="text-white text-[0.8rem] font-normal hover:text-[var(--text-muted)] transition-colors duration-300 no-underline">{label}</a>
+          <a key={href} href={href} className="text-white no-underline" style={{ fontSize: '0.8rem', fontWeight: 400, transition: 'color 0.3s' }}>{label}</a>
         ))}
       </nav>
-      <a href="#final-cta" className="text-[0.8rem] font-normal text-white hover:text-[var(--text-muted)] transition-colors duration-300 no-underline">Заявка →</a>
+      <a href="#final-cta" className="text-white no-underline" style={{ fontSize: '0.8rem', fontWeight: 400 }}>Заявка →</a>
     </header>
   )
 }
@@ -73,29 +74,26 @@ function Header() {
 /* ─── Hero ─── */
 function Hero() {
   return (
-    <section className="text-center pt-48 pb-16 relative" id="hero">
-      <Meta className="mb-8">[ Платформа QR-донатов ]</Meta>
+    <section className="text-center relative" style={{ paddingTop: 200, paddingBottom: 80 }} id="hero">
+      <Meta style={{ marginBottom: '2rem' }}>[ Платформа QR-донатов ]</Meta>
       <Reveal>
-        <h1 className="serif-text mx-auto mb-6" style={{ fontSize: 'clamp(3.5rem, 8vw, 7rem)', lineHeight: 1.1, letterSpacing: '-0.03em', maxWidth: 800 }}>
+        <h1 className="serif-text" style={{ fontSize: 'clamp(3.5rem, 8vw, 7rem)', lineHeight: 1.1, letterSpacing: '-0.03em', maxWidth: 800, margin: '0 auto 24px' }}>
           Комиссия всего 4,5%.
         </h1>
       </Reveal>
-      <Reveal style={{ transitionDelay: '0.1s' }}>
-        <p className="text-lg text-[var(--text-muted)] max-w-md mx-auto font-light">
+      <Reveal style={{ transitionDelay: '0.15s' }}>
+        <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', maxWidth: 420, margin: '0 auto', fontWeight: 300 }}>
           QR-донаты без регистрации для донатеров. Без подписок. Без паспорта. Вывод на карту в тот же день.
         </p>
       </Reveal>
-      <div className="absolute top-28 right-8 md:right-12 text-right hidden md:block">
-        <Meta>
-          SYS.REQ // ALPHA<br />
-          VER. 1.0
-        </Meta>
+      <div className="hidden md:block" style={{ position: 'absolute', top: 120, right: 48, textAlign: 'right' }}>
+        <Meta>SYS.REQ // ALPHA<br />VER. 1.0</Meta>
       </div>
     </section>
   )
 }
 
-/* ─── Spatial Cards Gallery (Pain Points as spatial cards) ─── */
+/* ─── Spatial Cards Gallery ─── */
 function SpatialGallery() {
   const cards = [
     { meta: 'Проблема #1', title: '10–15%\nкомиссии', img: 'https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=800' },
@@ -105,40 +103,49 @@ function SpatialGallery() {
     { meta: 'Проблема #4', title: 'Выплаты\nчерез неделю', img: 'https://images.pexels.com/photos/842711/pexels-photo-842711.jpeg?auto=compress&cs=tinysrgb&w=800' },
   ]
 
-  const transforms = [
-    'translateX(-650px) translateZ(-400px) rotateY(25deg)',
-    'translateX(-340px) translateZ(-200px) rotateY(15deg)',
-    'translateX(0) translateZ(50px) rotateY(0deg)',
-    'translateX(340px) translateZ(-200px) rotateY(-15deg)',
-    'translateX(650px) translateZ(-400px) rotateY(-25deg)',
+  const positions = [
+    { x: -650, z: -400, ry: 25, opacity: 0.3 },
+    { x: -340, z: -200, ry: 15, opacity: 0.7 },
+    { x: 0, z: 50, ry: 0, opacity: 1 },
+    { x: 340, z: -200, ry: -15, opacity: 0.7 },
+    { x: 650, z: -400, ry: -25, opacity: 0.3 },
   ]
-  const opacities = [0.3, 0.7, 1, 0.7, 0.3]
 
   return (
-    <section className="w-full overflow-hidden mb-24 md:mb-32" style={{ perspective: 1500, height: '70vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-      <div className="flex justify-center items-center relative w-full" style={{ transformStyle: 'preserve-3d' }}>
-        {cards.map((card, i) => (
-          <div
-            key={i}
-            className="absolute w-72 md:w-80 h-[420px] md:h-[480px] rounded-3xl overflow-hidden flex items-end p-8"
-            style={{
-              backgroundImage: `url(${card.img})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              transform: transforms[i],
-              opacity: opacities[i],
-              boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
-              transition: 'transform 0.8s cubic-bezier(0.2,0.8,0.2,1)',
-              zIndex: i === 2 ? 10 : 1,
-            }}
-          >
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 60%)', zIndex: 1 }} />
-            <div className="relative z-[2] w-full">
-              <div className="text-xs text-white/60 mb-1">{card.meta}</div>
-              <h3 className="serif-text text-2xl leading-tight whitespace-pre-line">{card.title}</h3>
+    <section style={{ perspective: 1500, height: '70vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden', marginBottom: 80 }}>
+      <div style={{ transformStyle: 'preserve-3d', position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {cards.map((card, i) => {
+          const p = positions[i]
+          return (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                width: 320,
+                height: 480,
+                borderRadius: 24,
+                backgroundImage: `url(${card.img})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                transform: `translateX(${p.x}px) translateZ(${p.z}px) rotateY(${p.ry}deg)`,
+                opacity: p.opacity,
+                boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
+                transition: 'transform 0.8s cubic-bezier(0.2,0.8,0.2,1)',
+                zIndex: i === 2 ? 10 : 1,
+                display: 'flex',
+                alignItems: 'flex-end',
+                padding: 32,
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 60%)', zIndex: 1 }} />
+              <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>{card.meta}</div>
+                <h3 className="serif-text" style={{ fontSize: '1.75rem', lineHeight: 1.1, whiteSpace: 'pre-line' }}>{card.title}</h3>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </section>
   )
@@ -148,11 +155,11 @@ function SpatialGallery() {
 function TrustBar() {
   return (
     <Reveal>
-      <section className="px-8 md:px-12 py-16 flex flex-col md:flex-row items-center gap-8 md:gap-16" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div className="text-xs text-[var(--text-muted)] w-full md:w-32 shrink-0 text-center md:text-left">Доверяют</div>
-        <div className="flex flex-wrap justify-center gap-8 md:gap-16 text-[var(--text-meta)]">
+      <section style={{ padding: '48px 48px', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 40 }}>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', width: 120, flexShrink: 0 }}>Доверяют</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 48 }}>
           {['Т-Банк — платёжный партнёр', 'PCI DSS + SSL', '0% НДФЛ — ст. 217 НК РФ', 'Договор дарения'].map((t, i) => (
-            <span key={i} className="text-xs font-mono uppercase tracking-wider whitespace-nowrap opacity-50">{t}</span>
+            <span key={i} className="meta-text" style={{ opacity: 0.5, whiteSpace: 'nowrap' }}>{t}</span>
           ))}
         </div>
       </section>
@@ -160,7 +167,7 @@ function TrustBar() {
   )
 }
 
-/* ─── Pain Points Detail ─── */
+/* ─── Pain Points ─── */
 function PainSection() {
   const pains = [
     { title: '10–15% комиссии', desc: 'Типичная платформа забирает 10% комиссии + 3% эквайринг. С каждой тысячи автору — 870 ₽.', answer: 'Uppora: 4,5% всего. Автору — 955 ₽' },
@@ -170,22 +177,22 @@ function PainSection() {
   ]
 
   return (
-    <section className="max-w-[1440px] mx-auto px-8 md:px-12 py-32 md:py-40" id="pain">
+    <section id="pain" style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px' }}>
       <Reveal>
-        <div className="text-center mb-20">
-          <Meta className="mb-4">[ Барьеры индустрии ]</Meta>
-          <h2 className="serif-text text-4xl md:text-5xl">Барьеры, которых не должно быть.</h2>
+        <div style={{ textAlign: 'center', marginBottom: 80 }}>
+          <Meta style={{ marginBottom: 16 }}>[ Барьеры индустрии ]</Meta>
+          <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Барьеры, которых не должно быть.</h2>
         </div>
       </Reveal>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
         {pains.map((p, i) => (
           <Reveal key={i} style={{ transitionDelay: `${i * 0.1}s` }}>
-            <div className="p-8 md:p-10 rounded-2xl border border-white/5 bg-white/[0.02] hover:-translate-y-1 transition-transform duration-500">
-              <Meta className="mb-4">BARRIER.0{i + 1}</Meta>
-              <h3 className="serif-text text-2xl mb-3">{p.title}</h3>
-              <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-4">{p.desc}</p>
-              <div className="pt-4 border-t border-white/10 text-[var(--amber)] text-sm font-medium flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--amber)]" />
+            <div style={{ padding: 40, borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+              <Meta style={{ marginBottom: 16 }}>BARRIER.0{i + 1}</Meta>
+              <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 12 }}>{p.title}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', lineHeight: 1.6, marginBottom: 16 }}>{p.desc}</p>
+              <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.1)', color: 'var(--amber)', fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--amber)' }} />
                 {p.answer}
               </div>
             </div>
@@ -196,25 +203,25 @@ function PainSection() {
   )
 }
 
-/* ─── Founder Quote (Big Testimonial) ─── */
+/* ─── Founder Quote ─── */
 function FounderQuote() {
   return (
-    <section className="max-w-[1000px] mx-auto px-8 md:px-12 py-32 md:py-40 text-center">
+    <section style={{ maxWidth: 900, margin: '0 auto', padding: '120px 48px', textAlign: 'center' }}>
       <Reveal>
-        <Meta className="mb-8">[ Основатель ]</Meta>
-        <blockquote className="serif-text text-3xl md:text-5xl leading-tight mb-10 relative" style={{ letterSpacing: '-0.02em' }}>
+        <Meta style={{ marginBottom: 32 }}>[ Основатель ]</Meta>
+        <blockquote className="serif-text" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: 40 }}>
           Я видел, как авторы теряют 20–30% заработанного на комиссиях и налогах. Мы нашли способ делать это иначе.
         </blockquote>
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-sm uppercase tracking-widest">Илья Панов</span>
-          <span className="text-xs text-[var(--text-muted)]">Основатель Uppora</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Илья Панов</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Основатель Uppora</span>
         </div>
       </Reveal>
     </section>
   )
 }
 
-/* ─── How It Works (Workflow) ─── */
+/* ─── Workflow (How It Works) ─── */
 function Workflow() {
   const steps = [
     { num: '01', title: 'Мы создаём страницу.', desc: 'Только имя и карта для выплат. Без загрузки паспорта. Занимает ровно 2 минуты.', tags: ['Консьерж-онбординг', 'Без регистрации', 'Без паспорта'], img: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800' },
@@ -223,35 +230,32 @@ function Workflow() {
   ]
 
   return (
-    <section className="max-w-[1440px] mx-auto px-8 md:px-12 py-32 md:py-40" id="steps">
+    <section id="steps" style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px' }}>
       <Reveal>
-        <div className="flex flex-col md:flex-row justify-between md:items-end mb-20 md:mb-24 gap-6">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 80, flexWrap: 'wrap', gap: 24 }}>
           <div>
-            <Meta className="mb-4">[ Три шага ]</Meta>
-            <h2 className="serif-text text-4xl md:text-5xl">Начните за 2 минуты.</h2>
+            <Meta style={{ marginBottom: 16 }}>[ Три шага ]</Meta>
+            <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Начните за 2 минуты.</h2>
           </div>
-          <Meta className="text-right">
-            SEQ_01 — 03<br />
-            ЛИНЕЙНЫЙ ПРОЦЕСС
-          </Meta>
+          <Meta style={{ textAlign: 'right' }}>SEQ_01 — 03<br />ЛИНЕЙНЫЙ ПРОЦЕСС</Meta>
         </div>
       </Reveal>
-      <div className="flex flex-col gap-24 md:gap-32">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 100 }}>
         {steps.map((s, i) => (
           <Reveal key={i} style={{ transitionDelay: `${i * 0.1}s` }}>
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center ${i % 2 === 1 ? 'md:[direction:rtl]' : ''}`}>
-              <div className={i % 2 === 1 ? 'md:[direction:ltr]' : ''}>
-                <div className="serif-text text-[6rem] md:text-[8rem] leading-[0.8] text-[var(--text-meta)] opacity-30 mb-6">{s.num}</div>
-                <h3 className="serif-text text-3xl md:text-4xl mb-4 leading-tight">{s.title}</h3>
-                <p className="text-lg text-[var(--text-muted)] font-light max-w-md">{s.desc}</p>
-                <div className="flex flex-wrap gap-3 mt-6">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 60, alignItems: 'center', direction: i % 2 === 1 ? 'rtl' : 'ltr' }}>
+              <div style={{ direction: 'ltr' }}>
+                <div className="serif-text" style={{ fontSize: 'clamp(5rem, 10vw, 8rem)', lineHeight: 0.8, color: 'var(--text-meta)', opacity: 0.3, marginBottom: 24 }}>{s.num}</div>
+                <h3 className="serif-text" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', marginBottom: 16, lineHeight: 1.2 }}>{s.title}</h3>
+                <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', fontWeight: 300, maxWidth: 400 }}>{s.desc}</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
                   {s.tags.map((t, ti) => (
-                    <span key={ti} className="border border-white/20 px-4 py-1.5 rounded-full text-xs text-[var(--text-muted)]">{t}</span>
+                    <span key={ti} style={{ border: '1px solid rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: 30, fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t}</span>
                   ))}
                 </div>
               </div>
-              <div className={`w-full rounded-2xl overflow-hidden relative group ${i % 2 === 1 ? 'md:[direction:ltr]' : ''}`} style={{ aspectRatio: '4/5', background: '#111' }}>
-                <img src={s.img} alt="" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-[10s]" />
+              <div style={{ direction: 'ltr', width: '100%', aspectRatio: '4/5', background: '#111', borderRadius: 16, overflow: 'hidden', position: 'relative' }}>
+                <img src={s.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8, transition: 'opacity 0.5s ease' }} />
                 <Meta style={{ position: 'absolute', bottom: 24, right: 24, background: 'rgba(0,0,0,0.5)', padding: '4px 8px' }}>IMG_SRC: RAW</Meta>
               </div>
             </div>
@@ -272,53 +276,50 @@ function Calculator() {
   const fmt = (n) => n.toLocaleString('ru-RU')
 
   return (
-    <section className="max-w-[1440px] mx-auto px-8 md:px-12 py-32 md:py-40" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <div className="max-w-lg mx-auto text-center">
+    <section style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+      <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center' }}>
         <Reveal>
-          <Meta className="mb-4">[ Калькулятор ]</Meta>
-          <h2 className="serif-text text-4xl md:text-5xl mb-10">Открытая бухгалтерия.</h2>
+          <Meta style={{ marginBottom: 16 }}>[ Калькулятор ]</Meta>
+          <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginBottom: 40 }}>Открытая бухгалтерия.</h2>
         </Reveal>
         <Reveal style={{ transitionDelay: '0.1s' }}>
-          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 md:p-10">
-            <div className="flex items-center justify-between mb-2">
-              <Meta>Сумма доната</Meta>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: '32px 40px' }}>
+            <Meta style={{ textAlign: 'left', marginBottom: 8 }}>Сумма доната</Meta>
+            <div className="serif-text" style={{ fontSize: '3rem', marginBottom: 24 }}>
+              {fmt(value)} <span style={{ fontSize: '1.5rem', color: 'var(--text-muted)' }}>₽</span>
             </div>
-            <div className="serif-text text-5xl mb-6">{fmt(value)} <span className="text-2xl text-[var(--text-muted)]">₽</span></div>
             <input
               type="range" min="100" max="10000" step="100" value={value}
               onChange={e => setValue(+e.target.value)}
-              className="w-full h-1 rounded-full appearance-none bg-white/10 cursor-pointer mb-8
-                [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full
-                [&::-webkit-slider-thumb]:bg-[var(--amber)] [&::-webkit-slider-thumb]:appearance-none
-                [&::-webkit-slider-thumb]:shadow-[0_0_20px_var(--amber-glow)]"
+              style={{ width: '100%', height: 4, borderRadius: 2, appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.1)', cursor: 'pointer', marginBottom: 32, outline: 'none' }}
             />
-            <div className="font-mono text-sm text-left space-y-3">
-              <div className="flex justify-between py-2 border-b border-white/10">
-                <span className="text-[var(--text-muted)]">Автору</span>
-                <span className="serif-text text-2xl text-[var(--amber)] font-medium">{fmt(author)} ₽</span>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.875rem', textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Автору</span>
+                <span className="serif-text" style={{ fontSize: '1.5rem', color: 'var(--amber)', fontWeight: 500 }}>{fmt(author)} ₽</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-white/10">
-                <span className="text-[var(--text-muted)]">Банку (процессинг)</span>
-                <span className="text-[var(--text-main)]">{fmt(bank)} ₽</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Банку (процессинг)</span>
+                <span>{fmt(bank)} ₽</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-white/10">
-                <span className="text-[var(--text-muted)]">Uppora</span>
-                <span className="text-[var(--text-main)]">{fmt(uppora)} ₽</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Uppora</span>
+                <span>{fmt(uppora)} ₽</span>
               </div>
-              <div className="flex justify-between py-3 border-t-2 border-[var(--amber)] mt-2 font-bold">
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: '2px solid var(--amber)', marginTop: 8, fontWeight: 700 }}>
                 <span>ИТОГО</span>
                 <span>{fmt(value)} ₽</span>
               </div>
             </div>
-            <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mt-6">
-              <div className="h-full rounded-full bg-[var(--amber)] transition-all duration-300" style={{ width: `${pct}%` }} />
+            <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginTop: 24 }}>
+              <div style={{ height: '100%', borderRadius: 3, background: 'var(--amber)', transition: 'width 0.3s', width: `${pct}%` }} />
             </div>
-            <p className="mt-4 text-xs text-[var(--text-meta)]">Альфа: комиссия 4,5% (3% эквайринг + 1,5% вывод). У конкурентов: 10–15%.</p>
+            <p style={{ marginTop: 16, fontSize: '0.75rem', color: 'var(--text-meta)' }}>Альфа: комиссия 4,5% (3% эквайринг + 1,5% вывод). У конкурентов: 10–15%.</p>
           </div>
         </Reveal>
         <Reveal style={{ transitionDelay: '0.2s' }}>
-          <p className="serif-text italic text-lg text-[var(--text-muted)] mt-8 max-w-md mx-auto">
-            «Мы зарабатываем <span className="text-[var(--amber)] not-italic font-medium">15 ₽</span> с каждой тысячи. Не берём подписку. Не берём комиссию за контент. 15 рублей — наш единственный доход.»
+          <p className="serif-text" style={{ fontStyle: 'italic', fontSize: '1.125rem', color: 'var(--text-muted)', marginTop: 32, maxWidth: 460, marginInline: 'auto' }}>
+            «Мы зарабатываем <span style={{ color: 'var(--amber)', fontStyle: 'normal', fontWeight: 500 }}>15 ₽</span> с каждой тысячи. Не берём подписку. Не берём комиссию за контент. 15 рублей — наш единственный доход.»
           </p>
         </Reveal>
       </div>
@@ -340,38 +341,41 @@ function Comparison() {
   const headers = ['Характеристика', 'Uppora', 'Boosty', 'DonationAlerts', 'Patreon', 'Ko-fi']
 
   return (
-    <section className="max-w-[1440px] mx-auto px-8 md:px-12 py-32 md:py-40" id="compare" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+    <section id="compare" style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
       <Reveal>
-        <div className="mb-16">
-          <Meta className="mb-4">[ Сравнение ]</Meta>
-          <h2 className="serif-text text-4xl md:text-5xl">Uppora vs. конкуренты.</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-2">На основе публичных тарифов, март 2026</p>
-        </div>
+        <Meta style={{ marginBottom: 16 }}>[ Сравнение ]</Meta>
+        <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginBottom: 8 }}>Uppora vs. конкуренты.</h2>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: 48 }}>На основе публичных тарифов, март 2026</p>
       </Reveal>
       <Reveal style={{ transitionDelay: '0.1s' }}>
-        <div className="overflow-x-auto -mx-8 md:mx-0">
-          <table className="w-full text-left text-sm min-w-[700px]">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', textAlign: 'left', fontSize: '0.875rem', borderCollapse: 'collapse', minWidth: 700 }}>
             <thead>
-              <tr className="border-b border-white/10">
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                 {headers.map((h, i) => (
-                  <th key={i} className={`py-4 font-mono text-[0.65rem] uppercase tracking-widest font-normal ${i === 1 ? 'text-[var(--amber)]' : 'text-[var(--text-meta)]'}`}>{h}</th>
+                  <th key={i} className="meta-text" style={{ padding: '16px 12px', fontWeight: 400, color: i === 1 ? 'var(--amber)' : undefined }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rows.map((row, ri) => (
-                <tr key={ri} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                  {row.map((cell, ci) => (
-                    <td key={ci} className={`py-4 ${ci === 0 ? 'text-white font-medium' : ci === 1 ? 'text-[var(--amber)] font-medium' : 'text-[var(--text-muted)] opacity-60'} ${cell.startsWith?.('✓') ? 'text-[var(--emerald)]!' : cell.startsWith?.('✗') ? 'text-[var(--red)]!' : ''}`}>
-                      {cell}
-                    </td>
-                  ))}
+                <tr key={ri} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  {row.map((cell, ci) => {
+                    let color = 'var(--text-muted)'
+                    if (ci === 0) color = 'var(--text-main)'
+                    if (ci === 1) color = 'var(--amber)'
+                    if (typeof cell === 'string' && cell.startsWith('✓')) color = 'var(--emerald)'
+                    if (typeof cell === 'string' && cell.startsWith('✗')) color = 'var(--red)'
+                    return (
+                      <td key={ci} style={{ padding: '14px 12px', color, fontWeight: ci <= 1 ? 500 : 400, opacity: ci > 1 ? 0.6 : 1 }}>{cell}</td>
+                    )
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-[var(--text-meta)] text-center mt-6">Данные из публичных тарифов платформ. Комиссии включают все сборы.</p>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-meta)', textAlign: 'center', marginTop: 24 }}>Данные из публичных тарифов платформ. Комиссии включают все сборы.</p>
       </Reveal>
     </section>
   )
@@ -379,76 +383,77 @@ function Comparison() {
 
 /* ─── Legal Model ─── */
 function LegalModel() {
+  const standardSteps = ['Донат отправляется', 'Попадает на счёт платформы (ООО)', 'Комиссия платформы 10–15%', 'Удержание НДФЛ 13%', 'Запрос на вывод средств', 'Остаток доходит автору']
+  const upporaSteps = ['Донатер отправляет деньги', 'Деньги сразу на карте автора']
+
   return (
-    <section className="max-w-[1440px] mx-auto px-8 md:px-12 py-32 md:py-40" id="legal" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+    <section id="legal" style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 48px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
       <Reveal>
-        <div className="text-center mb-16">
-          <Meta className="mb-4">[ Юридическая модель ]</Meta>
-          <h2 className="serif-text text-4xl md:text-5xl">Две модели. Мы выбрали лучшую.</h2>
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <Meta style={{ marginBottom: 16 }}>[ Юридическая модель ]</Meta>
+          <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Две модели. Мы выбрали лучшую.</h2>
         </div>
       </Reveal>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, maxWidth: 900, margin: '0 auto' }}>
         <Reveal style={{ transitionDelay: '0.1s' }}>
-          <div className="p-8 md:p-10 rounded-2xl border border-white/5 bg-white/[0.02] opacity-50">
-            <Meta className="mb-4 text-[var(--red)]">STD.PATH // REJECTED</Meta>
-            <h3 className="serif-text text-2xl mb-6">Оплата услуг</h3>
-            <div className="space-y-3 text-sm text-[var(--text-muted)]">
-              {['Донат отправляется', 'Попадает на счёт платформы (ООО)', 'Комиссия платформы 10–15%', 'Удержание НДФЛ 13%', 'Запрос на вывод средств', 'Остаток доходит автору'].map((step, j) => (
-                <div key={j} className="flex items-start gap-3">
-                  <span className="shrink-0 w-5 h-5 rounded-full border border-[var(--red)]/30 flex items-center justify-center text-[0.6rem] text-[var(--red)] font-mono">{j + 1}</span>
+          <div style={{ padding: 40, borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)', opacity: 0.5 }}>
+            <Meta style={{ marginBottom: 16, color: 'var(--red)' }}>STD.PATH // REJECTED</Meta>
+            <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 24 }}>Оплата услуг</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {standardSteps.map((step, j) => (
+                <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: 'var(--red)', fontFamily: "'Space Mono', monospace" }}>{j + 1}</span>
                   <span>{step}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-6 pt-4 border-t border-white/10 text-[var(--red)] font-medium text-sm">
+            <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.1)', color: 'var(--red)', fontWeight: 500, fontSize: '0.875rem' }}>
               Потери: до 25–30% с каждого доната
             </div>
           </div>
         </Reveal>
         <Reveal style={{ transitionDelay: '0.2s' }}>
-          <div className="p-8 md:p-10 rounded-2xl border border-[var(--amber)]/40 bg-white/[0.03]">
-            <Meta className="mb-4 text-[var(--amber)]">UPP.PATH // ACTIVE</Meta>
-            <h3 className="serif-text text-2xl mb-6">Договор дарения</h3>
-            <div className="space-y-3 text-sm text-[var(--text-muted)]">
-              {['Донатер отправляет деньги', 'Деньги сразу на карте автора'].map((step, j) => (
-                <div key={j} className="flex items-start gap-3">
-                  <span className="shrink-0 w-5 h-5 rounded-full border border-[var(--amber)]/30 flex items-center justify-center text-[0.6rem] text-[var(--amber)] font-mono">{j + 1}</span>
+          <div style={{ padding: 40, borderRadius: 16, border: '1px solid rgba(245,158,11,0.4)', background: 'rgba(255,255,255,0.03)' }}>
+            <Meta style={{ marginBottom: 16, color: 'var(--amber)' }}>UPP.PATH // ACTIVE</Meta>
+            <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 24 }}>Договор дарения</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {upporaSteps.map((step, j) => (
+                <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', border: '1px solid rgba(245,158,11,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: 'var(--amber)', fontFamily: "'Space Mono', monospace" }}>{j + 1}</span>
                   <span>{step}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-8 pt-4 border-t border-[var(--amber)]/30 text-[var(--amber)] font-medium text-sm leading-relaxed">
-              Основание: ст. 217 НК РФ<br />
-              НДФЛ: 0%<br />
-              Статус ИП/самозанятого: не нужен
+            <div style={{ marginTop: 32, paddingTop: 16, borderTop: '1px solid rgba(245,158,11,0.3)', color: 'var(--amber)', fontWeight: 500, fontSize: '0.875rem', lineHeight: 1.8 }}>
+              Основание: ст. 217 НК РФ<br />НДФЛ: 0%<br />Статус ИП/самозанятого: не нужен
             </div>
           </div>
         </Reveal>
       </div>
-      <Reveal className="text-center mt-8">
-        <p className="text-xs text-[var(--text-meta)]">Дарение между физическими лицами не облагается НДФЛ по ст. 217 НК РФ, п. 18.1</p>
+      <Reveal style={{ transitionDelay: '0.3s' }}>
+        <p style={{ textAlign: 'center', marginTop: 32, fontSize: '0.75rem', color: 'var(--text-meta)' }}>Дарение между физическими лицами не облагается НДФЛ по ст. 217 НК РФ, п. 18.1</p>
       </Reveal>
     </section>
   )
 }
 
-/* ─── Benefits Grid ─── */
+/* ─── Benefits ─── */
 function Benefits() {
   return (
-    <div className="max-w-[1440px] mx-auto px-8 md:px-12 pb-32" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 80 }}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 48px 120px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
         <Reveal>
-          <div className="p-8 md:p-10 bg-white/[0.02] rounded-2xl border border-white/5">
-            <Meta className="mb-4">FIN.OPEN // 01</Meta>
-            <h3 className="serif-text text-2xl mb-3">Процессинг карт</h3>
-            <p className="text-[var(--text-muted)] text-sm leading-relaxed">3% покрывает стоимость эквайринга через Т-Банк. Оставшиеся 1,5% — это всё, что получает Uppora с каждой транзакции.</p>
+          <div style={{ padding: 40, background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Meta style={{ marginBottom: 16 }}>FIN.OPEN // 01</Meta>
+            <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 12 }}>Процессинг карт</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6 }}>3% покрывает стоимость эквайринга через Т-Банк. Оставшиеся 1,5% — это всё, что получает Uppora.</p>
           </div>
         </Reveal>
         <Reveal style={{ transitionDelay: '0.1s' }}>
-          <div className="p-8 md:p-10 bg-white/[0.02] rounded-2xl border border-white/5">
-            <Meta className="mb-4">FIN.OPEN // 02</Meta>
-            <h3 className="serif-text text-2xl mb-3">Инфраструктура и развитие</h3>
-            <p className="text-[var(--text-muted)] text-sm leading-relaxed">Серверы, безопасность, поддержка 24/7. Постоянные улучшения: скорость, удобство, новые функции для авторов.</p>
+          <div style={{ padding: 40, background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Meta style={{ marginBottom: 16 }}>FIN.OPEN // 02</Meta>
+            <h3 className="serif-text" style={{ fontSize: '1.5rem', marginBottom: 12 }}>Инфраструктура и развитие</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6 }}>Серверы, безопасность, поддержка 24/7. Постоянные улучшения для авторов.</p>
           </div>
         </Reveal>
       </div>
@@ -459,22 +464,25 @@ function Benefits() {
 /* ─── Marquee ─── */
 function Marquee() {
   const items = ['Комиссия 4,5%', 'Без регистрации', 'Вывод в тот же день', '0% НДФЛ', 'QR-кит бесплатно', 'Договор дарения']
-  const content = items.map((item, i) => (
-    <span key={i} className="inline-flex items-center gap-[4vw]">
-      <span className="serif-text text-3xl md:text-4xl whitespace-nowrap text-[var(--text-muted)]">
-        {item.includes('4,5%') || item.includes('0%') ? <><span className="text-white">{item}</span></> : item}
-      </span>
-      <span className="w-2 h-2 rounded-full bg-[var(--text-meta)]" />
-    </span>
-  ))
 
   return (
-    <section className="w-full overflow-hidden py-24 relative" style={{ background: '#050505' }}>
-      <Meta style={{ position: 'absolute', top: 40, left: 48, zIndex: 20 }}>[ Ключевые преимущества ]</Meta>
-      <div className="absolute inset-y-0 left-0 w-[15vw] z-10" style={{ background: 'linear-gradient(to right, #000, transparent)' }} />
-      <div className="absolute inset-y-0 right-0 w-[15vw] z-10" style={{ background: 'linear-gradient(to left, #000, transparent)' }} />
-      <div className="flex w-fit gap-[4vw] px-[4vw]" style={{ animation: 'marquee-scroll 30s linear infinite' }}>
-        {content}{content}
+    <section style={{ width: '100%', overflow: 'hidden', padding: '80px 0', background: '#050505', position: 'relative' }}>
+      <Meta style={{ position: 'absolute', top: 32, left: 48, zIndex: 20 }}>[ Ключевые преимущества ]</Meta>
+      <div style={{ position: 'absolute', inset: '0 auto 0 0', width: '15vw', zIndex: 10, background: 'linear-gradient(to right, #050505, transparent)' }} />
+      <div style={{ position: 'absolute', inset: '0 0 0 auto', width: '15vw', zIndex: 10, background: 'linear-gradient(to left, #050505, transparent)' }} />
+      <div style={{ display: 'flex', width: 'fit-content', animation: 'marquee-scroll 30s linear infinite' }}>
+        {[0, 1].map(set => (
+          <div key={set} style={{ display: 'flex', alignItems: 'center' }}>
+            {items.map((item, i) => (
+              <span key={`${set}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4vw', padding: '0 4vw' }}>
+                <span className="serif-text" style={{ fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', whiteSpace: 'nowrap', color: item.includes('4,5%') || item.includes('0%') ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                  {item}
+                </span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--text-meta)' }} />
+              </span>
+            ))}
+          </div>
+        ))}
       </div>
     </section>
   )
@@ -499,25 +507,31 @@ function FAQ() {
   ]
 
   return (
-    <section className="max-w-3xl mx-auto px-8 md:px-12 py-32 md:py-40" id="faq" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+    <section id="faq" style={{ maxWidth: 720, margin: '0 auto', padding: '120px 48px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
       <Reveal>
-        <div className="text-center mb-16">
-          <Meta className="mb-4">[ FAQ ]</Meta>
-          <h2 className="serif-text text-4xl">Частые вопросы.</h2>
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <Meta style={{ marginBottom: 16 }}>[ FAQ ]</Meta>
+          <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Частые вопросы.</h2>
         </div>
       </Reveal>
       <div>
         {questions.map((item, i) => (
-          <div key={i} className="border-b border-white/10">
+          <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <button
-              className="w-full flex justify-between items-center py-5 text-left cursor-pointer group"
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
+              style={{
+                width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '20px 0', textAlign: 'left', cursor: 'pointer',
+                background: 'none', border: 'none', color: openIndex === i ? 'var(--amber)' : 'var(--text-main)',
+                fontFamily: "'Inter', sans-serif", fontSize: '0.9375rem', fontWeight: 500,
+                transition: 'color 0.3s',
+              }}
             >
-              <span className={`text-sm font-medium pr-4 transition-colors duration-300 ${openIndex === i ? 'text-[var(--amber)]' : 'text-white group-hover:text-[var(--amber)]'}`}>{item.q}</span>
-              <span className={`text-[var(--text-meta)] text-xl transition-transform duration-300 shrink-0 ${openIndex === i ? 'rotate-45' : ''}`}>+</span>
+              <span style={{ paddingRight: 16 }}>{item.q}</span>
+              <span style={{ color: 'var(--text-meta)', fontSize: '1.25rem', flexShrink: 0, transition: 'transform 0.3s', transform: openIndex === i ? 'rotate(45deg)' : 'none' }}>+</span>
             </button>
-            <div className={`overflow-hidden transition-all duration-400 ${openIndex === i ? 'max-h-48 pb-5' : 'max-h-0'}`}>
-              <p className="text-sm text-[var(--text-muted)] leading-relaxed">{item.a}</p>
+            <div style={{ overflow: 'hidden', maxHeight: openIndex === i ? 200 : 0, transition: 'max-height 0.4s ease', paddingBottom: openIndex === i ? 20 : 0 }}>
+              <p style={{ fontSize: '0.9375rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>{item.a}</p>
             </div>
           </div>
         ))}
@@ -526,37 +540,32 @@ function FAQ() {
   )
 }
 
-/* ─── Second Quote ─── */
-function SecondQuote() {
-  return (
-    <section className="max-w-[1000px] mx-auto px-8 md:px-12 py-24 text-center">
-      <Reveal>
-        <blockquote className="serif-text text-2xl md:text-4xl leading-tight mb-8" style={{ letterSpacing: '-0.02em' }}>
-          Через договор дарения, где комиссия всего 4,5%. Мы убрали посредника, чтобы вы оставались в потоке.
-        </blockquote>
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-sm uppercase tracking-widest">Илья Панов</span>
-          <span className="text-xs text-[var(--text-muted)]">Основатель Uppora</span>
-        </div>
-      </Reveal>
-    </section>
-  )
-}
-
 /* ─── Final CTA ─── */
 function FinalCTA() {
   return (
-    <section className="max-w-xl mx-auto px-8 md:px-12 py-32 md:py-40 text-center" id="final-cta" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+    <section id="final-cta" style={{ maxWidth: 520, margin: '0 auto', padding: '120px 48px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
       <Reveal>
-        <Meta className="mb-6">[ Заявка ]</Meta>
-        <h2 className="serif-text text-4xl md:text-5xl mb-4">Бесплатно. Без паспорта. Без подписки.</h2>
-        <p className="text-sm text-[var(--text-muted)] mb-10">Оставьте заявку — мы настроим страницу и QR за вас. Ответим в течение 2 часов.</p>
+        <Meta style={{ marginBottom: 24 }}>[ Заявка ]</Meta>
+        <h2 className="serif-text" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: 16 }}>Бесплатно. Без паспорта. Без подписки.</h2>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: 40 }}>Оставьте заявку — мы настроим страницу и QR за вас. Ответим в течение 2 часов.</p>
       </Reveal>
       <Reveal style={{ transitionDelay: '0.1s' }}>
-        <form className="flex flex-col gap-3 mb-6">
-          <input type="text" placeholder="Ваше имя" className="px-5 py-4 rounded-xl border border-white/10 bg-white/[0.03] text-white text-sm focus:outline-none focus:border-[var(--amber)]/50 transition-colors placeholder:text-[var(--text-meta)]" />
-          <input type="email" placeholder="Email" className="px-5 py-4 rounded-xl border border-white/10 bg-white/[0.03] text-white text-sm focus:outline-none focus:border-[var(--amber)]/50 transition-colors placeholder:text-[var(--text-meta)]" />
-          <select className="px-5 py-4 rounded-xl border border-white/10 bg-white/[0.03] text-[var(--text-meta)] text-sm focus:outline-none focus:border-[var(--amber)]/50 transition-colors appearance-none">
+        <form style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+          {[
+            { type: 'text', placeholder: 'Ваше имя' },
+            { type: 'email', placeholder: 'Email' },
+          ].map((f, i) => (
+            <input key={i} type={f.type} placeholder={f.placeholder} style={{
+              padding: '16px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.03)', color: 'white', fontSize: '0.875rem',
+              fontFamily: "'Inter', sans-serif", outline: 'none',
+            }} />
+          ))}
+          <select style={{
+            padding: '16px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)',
+            background: 'rgba(255,255,255,0.03)', color: 'var(--text-meta)', fontSize: '0.875rem',
+            fontFamily: "'Inter', sans-serif", outline: 'none', appearance: 'none', WebkitAppearance: 'none',
+          }}>
             <option value="" disabled selected>Ваша ниша</option>
             <option value="music">Музыка</option>
             <option value="education">Образование / лекции</option>
@@ -565,17 +574,25 @@ function FinalCTA() {
             <option value="nko">НКО / благотворительность</option>
             <option value="other">Другое</option>
           </select>
-          <button type="button" className="bg-[var(--amber)] text-black px-8 py-4 rounded-xl font-medium text-sm hover:opacity-90 active:scale-[0.98] transition-all mt-2">
+          <button type="button" style={{
+            background: 'var(--amber)', color: '#000', padding: '16px 32px', borderRadius: 12,
+            fontWeight: 500, fontSize: '0.875rem', border: 'none', cursor: 'pointer', marginTop: 8,
+            fontFamily: "'Inter', sans-serif",
+          }}>
             Оставить заявку →
           </button>
         </form>
       </Reveal>
       <Reveal style={{ transitionDelay: '0.2s' }}>
-        <a href="https://t.me/uppora_support" target="_blank" rel="noopener" className="inline-block text-xs text-[var(--text-muted)] border border-white/10 px-5 py-2 rounded-full hover:border-white/30 transition-colors no-underline mb-6">
+        <a href="https://t.me/uppora_support" target="_blank" rel="noopener" style={{
+          display: 'inline-block', fontSize: '0.75rem', color: 'var(--text-muted)',
+          border: '1px solid rgba(255,255,255,0.1)', padding: '8px 20px', borderRadius: 30,
+          textDecoration: 'none', marginBottom: 24,
+        }}>
           Или напишите в Telegram
         </a>
-        <p className="text-xs text-[var(--text-meta)] mb-6">Удалить аккаунт можно в один клик. Нет донатов — нет расходов.</p>
-        <div className="flex flex-wrap gap-6 justify-center text-[var(--text-meta)]">
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-meta)', marginBottom: 24 }}>Удалить аккаунт можно в один клик. Нет донатов — нет расходов.</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'center' }}>
           <Meta>SSL + PCI DSS</Meta>
           <Meta>Ст. 217 НК РФ</Meta>
           <Meta>Т-Банк</Meta>
@@ -588,8 +605,8 @@ function FinalCTA() {
 /* ─── Footer ─── */
 function Footer() {
   return (
-    <footer className="px-8 md:px-12 py-12 flex flex-col md:flex-row justify-between items-center gap-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <div className="text-base font-medium" style={{ letterSpacing: '-0.02em' }}>Uppora — 2026</div>
+    <footer style={{ padding: '48px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+      <div style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-0.02em' }}>Uppora — 2026</div>
       <Meta>SYSTEM NORM: NOMINAL</Meta>
     </footer>
   )
@@ -612,7 +629,6 @@ export default function App() {
         <Comparison />
         <LegalModel />
         <Benefits />
-        <SecondQuote />
         <Marquee />
         <FAQ />
         <FinalCTA />
